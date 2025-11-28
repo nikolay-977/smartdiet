@@ -107,6 +107,8 @@ erDiagram
         decimal target_value
     }
 
+    PRODUCT ||--o{ CONSUMED_PRODUCT : has
+    PRODUCT ||--o{ USER_PREFERENCE : has
     PRODUCT {
         bigint id PK
         varchar name
