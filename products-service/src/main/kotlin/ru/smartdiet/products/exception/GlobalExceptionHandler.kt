@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import ru.smartdiet.products.dto.ErrorResponse
+import java.time.LocalDateTime
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -23,6 +24,19 @@ class GlobalExceptionHandler {
         )
 
         return ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
+    }
+
+    @ExceptionHandler(RuntimeException::class)
+    fun handleRuntimeException(e: RuntimeException): ResponseEntity<ErrorResponse> {
+        logger.error("Service error: {}", e.message, e)
+
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            error = "Internal Server Error",
+            message = e.message ?: "Service error occurred"
+        )
+
+        return ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     @ExceptionHandler(Exception::class)

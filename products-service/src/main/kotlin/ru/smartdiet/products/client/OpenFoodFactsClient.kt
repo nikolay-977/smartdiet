@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable
 
 @FeignClient(
     name = "openfoodfacts",
-    url = "https://world.openfoodfacts.org"
+    url = "https://ru.openfoodfacts.org"  // Русский домен
 )
 interface OpenFoodFactsClient {
 

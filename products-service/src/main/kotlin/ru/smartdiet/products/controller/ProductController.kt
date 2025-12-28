@@ -4,26 +4,24 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ru.smartdiet.products.dto.ProductResponse
 import ru.smartdiet.products.service.ProductService
+import ru.smartdiet.products.service.UsdaService
 
 @RestController
 @RequestMapping("/api/products")
 class ProductController(
-    private val productService: ProductService
+    private val productService: ProductService,
+    private val usdaService: UsdaService
 ) {
 
     @GetMapping("/{barcode}")
-    fun getProductByBarcode(@PathVariable barcode: String): ResponseEntity<ProductResponse> {
-        val productInfo = productService.getProductInfo(barcode)
+    fun getProduct(@PathVariable barcode: String): ResponseEntity<ProductResponse> {
+        val productInfo = productService.getRussianProductInfo(barcode)
         return ResponseEntity.ok(productInfo)
     }
 
-    @GetMapping("/test")
-    fun test(): String {
-        return "Products Service is running!"
-    }
-
-    @GetMapping("/health")
-    fun health(): Map<String, String> {
-        return mapOf("status" to "UP")
+    @GetMapping("/search/usda")
+    fun searchUsdaProducts(@RequestParam query: String): ResponseEntity<List<ProductResponse>> {
+        val products = usdaService.searchProducts(query)
+        return ResponseEntity.ok(products)
     }
 }

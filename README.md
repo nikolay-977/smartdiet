@@ -28,6 +28,13 @@ cd smartdiet
 ```
 
 ### 4. Протестируйте:
+
+#### Поиск Nutella в Open Food
 ```bash
 curl http://localhost:8082/api/products/3017620422003
+```
+
+#### Поиск яблок в USDA - для тестирования необходимо указать USDA_API_KEY в application.yaml (Зарегистрируйтесь на https://fdc.nal.usda.gov/)
+```bash
+curl "http://localhost:8082/api/products/search/usda?query=apple"
 ```
