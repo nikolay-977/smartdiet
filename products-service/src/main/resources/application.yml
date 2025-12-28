@@ -1,0 +1,40 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: products-service
+
+  jackson:
+    serialization:
+      indent-output: true
+    default-property-inclusion: NON_NULL
+
+  cloud:
+    compatibility-verifier:
+      enabled: false
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 10000
+        readTimeout: 15000
+        loggerLevel: basic
+      usda:
+        connectTimeout: 10000
+        readTimeout: 20000
+        loggerLevel: basic
+
+openfoodfacts:
+  russian-url: https://ru.openfoodfacts.org
+  worldwide-url: https://world.openfoodfacts.org
+
+usda:
+  api:
+    key: ${USDA_API_KEY:}
+
+logging:
+  level:
+    ru.smartdiet.products: INFO
+    org.springframework.cloud.openfeign: INFO
