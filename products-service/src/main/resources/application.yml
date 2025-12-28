@@ -1,0 +1,22 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: products-service
+  
+  jackson:
+    serialization:
+      indent-output: true
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+        loggerLevel: basic
+
+logging:
+  level:
+    ru.smartdiet.products: INFO
