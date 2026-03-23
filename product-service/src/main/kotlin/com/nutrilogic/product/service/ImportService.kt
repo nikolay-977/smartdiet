@@ -127,33 +127,35 @@ class ImportService(
         nutrients.forEach { nutrientMap ->
             val nutrient = nutrientMap["nutrient"] as? Map<String, Any> ?: return@forEach
             val name = nutrient["name"] as? String ?: return@forEach
+            val unitName = nutrient["unitName"] as? String ?: ""
             val amount = (nutrientMap["amount"] as? Number)?.toDouble() ?: return@forEach
 
             when {
-                name.contains("Energy", ignoreCase = true) && name.contains("kcal", ignoreCase = true) -> {
+                // Энергия (калории)
+                name.equals("Energy", ignoreCase = true) && unitName.equals("kcal", ignoreCase = true) -> {
                     calories = amount
                 }
+                // Белок
                 name.equals("Protein", ignoreCase = true) -> {
                     protein = amount
                 }
+                // Жиры
                 name.equals("Total lipid (fat)", ignoreCase = true) -> {
                     fat = amount
                 }
+                // Углеводы
                 name.equals("Carbohydrate, by difference", ignoreCase = true) -> {
                     carbs = amount
                 }
-                name.contains("Vitamin", ignoreCase = true) -> {
-                    vitamins[name] = amount
+                // Витамины (исключаем токоферолы и токотриенолы)
+                name.startsWith("Vitamin", ignoreCase = true) &&
+                        !name.contains("Tocopherol", ignoreCase = true) &&
+                        !name.contains("Tocotrienol", ignoreCase = true) -> {
+                    vitamins[normalizeNutrientName(name)] = amount
                 }
-                name.contains("Iron", ignoreCase = true) ||
-                        name.contains("Calcium", ignoreCase = true) ||
-                        name.contains("Magnesium", ignoreCase = true) ||
-                        name.contains("Potassium", ignoreCase = true) ||
-                        name.contains("Zinc", ignoreCase = true) ||
-                        name.contains("Selenium", ignoreCase = true) ||
-                        name.contains("Copper", ignoreCase = true) ||
-                        name.contains("Manganese", ignoreCase = true) -> {
-                    minerals[name] = amount
+                // Минералы
+                isMineral(name) -> {
+                    minerals[normalizeNutrientName(name)] = amount
                 }
             }
         }
@@ -161,17 +163,67 @@ class ImportService(
         val foodCategory = (foodJson["foodCategory"] as? Map<String, Any>)?.get("description") as? String
         val category = foodCategory ?: "Other"
 
+        if (calories == 0.0) {
+            println("Warning: Product '$description' has 0 calories")
+        }
+
         return Product(
             name = description,
-            barcode = null,
             calories = calories,
             protein = protein,
             fat = fat,
             carbs = carbs,
-            vitamins = if (vitamins.isNotEmpty()) vitamins else null,
-            minerals = if (minerals.isNotEmpty()) minerals else null,
+            vitamins = vitamins.ifEmpty { null },
+            minerals = minerals.ifEmpty { null },
             category = category
         )
+    }
+
+    private fun isMineral(name: String): Boolean {
+        val minerals = listOf(
+            "Calcium", "Iron", "Magnesium", "Phosphorus", "Potassium",
+            "Sodium", "Zinc", "Copper", "Manganese", "Selenium",
+            "Iodine", "Chromium", "Molybdenum", "Fluoride"
+        )
+        return minerals.any { name.startsWith(it, ignoreCase = true) }
+    }
+
+    // Нормализация названий нутриентов
+    private fun normalizeNutrientName(name: String): String {
+        return when {
+            // Витамины - нормализуем к простому виду
+            name.contains("Vitamin C", ignoreCase = true) -> "Vitamin C"
+            name.contains("Vitamin A", ignoreCase = true) -> "Vitamin A"
+            name.contains("Vitamin D", ignoreCase = true) -> "Vitamin D"
+            name.contains("Vitamin E", ignoreCase = true) -> "Vitamin E"
+            name.contains("Vitamin K", ignoreCase = true) -> "Vitamin K"
+            name.contains("Vitamin B-6", ignoreCase = true) -> "Vitamin B6"
+            name.contains("Vitamin B-12", ignoreCase = true) -> "Vitamin B12"
+            name.contains("Thiamin", ignoreCase = true) -> "Vitamin B1"
+            name.contains("Riboflavin", ignoreCase = true) -> "Vitamin B2"
+            name.contains("Niacin", ignoreCase = true) -> "Vitamin B3"
+            name.contains("Folate", ignoreCase = true) -> "Folate"
+
+            // Для минералов - если есть запятая, сохраняем как есть
+            name.contains(",") -> {
+                // Оставляем оригинальное название, но убираем лишние пробелы
+                name.split(",").joinToString(", ") { it.trim() }
+            }
+
+            // Простые минералы
+            name.startsWith("Calcium", ignoreCase = true) -> "Calcium"
+            name.startsWith("Iron", ignoreCase = true) -> "Iron"
+            name.startsWith("Magnesium", ignoreCase = true) -> "Magnesium"
+            name.startsWith("Potassium", ignoreCase = true) -> "Potassium"
+            name.startsWith("Zinc", ignoreCase = true) -> "Zinc"
+            name.startsWith("Copper", ignoreCase = true) -> "Copper"
+            name.startsWith("Manganese", ignoreCase = true) -> "Manganese"
+            name.startsWith("Phosphorus", ignoreCase = true) -> "Phosphorus"
+            name.startsWith("Selenium", ignoreCase = true) -> "Selenium"
+            name.startsWith("Sodium", ignoreCase = true) -> "Sodium"
+
+            else -> name
+        }
     }
 
     fun getLastImportStatus(): Map<String, Any?> {

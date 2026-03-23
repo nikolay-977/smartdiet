@@ -17,9 +17,6 @@ data class Product(
     @Column(nullable = false)
     var name: String = "",
 
-    @Column(unique = true)
-    var barcode: String? = null,
-
     @Column(nullable = false)
     var calories: Double = 0.0,
 

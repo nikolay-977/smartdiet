@@ -7,8 +7,6 @@ data class ProductDto(
     @field:NotBlank(message = "Name is required")
     val name: String,
 
-    val barcode: String? = null,
-
     @field:PositiveOrZero(message = "Calories must be positive or zero")
     val calories: Double = 0.0,
 
