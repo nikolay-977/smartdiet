@@ -1,0 +1,17 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: product-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/products/**,/api/admin/**
+          filters:
+            - StripPrefix=0
+
+        - id: recommendation-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**,/api/diary/**,/api/recommendations/**,/api/preferences/**,/api/users/**
+          filters:
+            - StripPrefix=0
