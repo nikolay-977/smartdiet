@@ -7,6 +7,4 @@ echo "Building all services..."
 
 echo "All services built successfully!"
 
-chmod +x init-databases.sh
-
 docker-compose up -d

@@ -1,4 +1,9 @@
+server:
+  port: 8080
+
 spring:
+  application:
+    name: api-gateway
   cloud:
     gateway:
       discovery:
@@ -38,11 +43,3 @@ logging:
     com.netflix.discovery: DEBUG
     com.nutrilogic.gateway: DEBUG
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,gates
-  endpoint:
-    gateway:
-      enabled: true

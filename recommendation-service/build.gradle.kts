@@ -27,7 +27,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    // Actuator и Prometheus для мониторинга
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("io.micrometer:micrometer-core")
+    implementation("io.micrometer:micrometer-tracing-bridge-brave")
+
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     // Spring Cloud
@@ -36,9 +42,6 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-config")
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
-
-    // Для WebClient
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     // Kotlin extensions
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -53,11 +56,6 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
-
-    // Kotlin extensions
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14")
