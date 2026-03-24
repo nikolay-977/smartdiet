@@ -48,4 +48,3 @@ subprojects {
 tasks.named("bootJar") {
     enabled = false
 }
-

@@ -25,7 +25,12 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
     implementation("org.springframework.cloud:spring-cloud-config-server")
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+
+    // Actuator и Prometheus для мониторинга
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("io.micrometer:micrometer-core")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

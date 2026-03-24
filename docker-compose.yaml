@@ -27,6 +27,9 @@ services:
     container_name: eureka-server
     ports:
       - "8761:8761"
+    environment:
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics,prometheus
     networks:
       - nutrilogic-network
 
@@ -37,6 +40,8 @@ services:
       - "8888:8888"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics,prometheus
     depends_on:
       - eureka-server
     networks:
@@ -53,6 +58,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nutrilogic_products
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics,prometheus
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+      - MANAGEMENT_METRICS_TAGS_APPLICATION=product-service
     depends_on:
       config-server:
         condition: service_started
@@ -74,6 +83,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nutrilogic_recommendations
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics,prometheus
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+      - MANAGEMENT_METRICS_TAGS_APPLICATION=recommendation-service
     depends_on:
       config-server:
         condition: service_started
@@ -90,11 +103,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_CLOUD_CONFIG_ENABLED=false
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics,prometheus
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+      - MANAGEMENT_METRICS_TAGS_APPLICATION=api-gateway
     depends_on:
-      config-server:
-        condition: service_started
       eureka-server:
         condition: service_started
       product-service:
@@ -104,9 +118,62 @@ services:
     networks:
       - nutrilogic-network
 
+  # Prometheus для сбора метрик
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - nutrilogic-network
+    restart: unless-stopped
+
+  # Grafana для визуализации
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - nutrilogic-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # PostgreSQL Exporter для мониторинга базы данных
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:postgres@postgres:5432/nutrilogic_products?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - nutrilogic-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
 networks:
   nutrilogic-network:
     driver: bridge
 
 volumes:
   postgres-data:
+  prometheus-data:
+  grafana-data:
